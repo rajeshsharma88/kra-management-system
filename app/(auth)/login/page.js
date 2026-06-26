@@ -52,7 +52,7 @@ export default function LoginPage() {
 
     if (userError || !userData) {
       await supabase.auth.signOut()
-      setServerError('Invalid username or password. Try again.')
+      setServerError(`Profile error: ${userError?.message ?? 'no user row found'} (username: ${data.username})`)
       setLoading(false)
       return
     }
