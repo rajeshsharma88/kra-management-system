@@ -192,18 +192,10 @@ export default function SetupPage() {
                   </div>
                   {!isDone && !isLocked && (
                     <button
-                      onClick={() => setStep(num === 3 ? 'kras' : num)}
+                      onClick={() => num === 3 ? router.push('/assign-kras') : setStep(num + 1)}
                       className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:bg-indigo-700 transition-colors duration-150"
                     >
                       {num === 3 ? 'Assign KRAs →' : `Start: ${label}`}
-                    </button>
-                  )}
-                  {num === 3 && !isDone && !isLocked && (
-                    <button
-                      onClick={() => router.push('/assign-kras')}
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm hover:bg-indigo-700 transition-colors duration-150"
-                    >
-                      Assign KRAs →
                     </button>
                   )}
                 </div>
