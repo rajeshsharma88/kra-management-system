@@ -32,24 +32,6 @@ export default function LoginPage() {
     setServerError('')
     const supabase = createClient()
 
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id, role, is_active')
-      .eq('username', data.username)
-      .single()
-
-    if (userError || !userData) {
-      setServerError('Invalid username or password. Try again.')
-      setLoading(false)
-      return
-    }
-
-    if (!userData.is_active) {
-      setServerError('Your account has been deactivated. Contact your admin.')
-      setLoading(false)
-      return
-    }
-
     const email = `${data.username}@kra.internal`
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -58,6 +40,26 @@ export default function LoginPage() {
 
     if (signInError) {
       setServerError('Invalid username or password. Try again.')
+      setLoading(false)
+      return
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id, role, is_active')
+      .eq('username', data.username)
+      .single()
+
+    if (userError || !userData) {
+      await supabase.auth.signOut()
+      setServerError('Invalid username or password. Try again.')
+      setLoading(false)
+      return
+    }
+
+    if (!userData.is_active) {
+      await supabase.auth.signOut()
+      setServerError('Your account has been deactivated. Contact your admin.')
       setLoading(false)
       return
     }
