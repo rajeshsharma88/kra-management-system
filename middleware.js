@@ -6,7 +6,7 @@ export async function middleware(request) {
   const { supabaseResponse, user } = await updateSession(request)
   const { pathname } = request.nextUrl
 
-  const isAuthRoute = pathname === '/login' || pathname === '/change-password' || pathname === '/session-expired'
+  const isAuthRoute = pathname === '/login' || pathname === '/change-password' || pathname === '/session-expired' || pathname === '/setup'
   const isSetupRoute = pathname.startsWith('/setup')
   const isAdminRoute = pathname.startsWith('/dashboard') ||
     pathname.startsWith('/assign-kras') ||
