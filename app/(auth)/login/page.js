@@ -39,7 +39,7 @@ export default function LoginPage() {
     })
 
     if (signInError) {
-      setServerError('Invalid username or password. Try again.')
+      setServerError(`Auth error: ${signInError.message} (status: ${signInError.status})`)
       setLoading(false)
       return
     }
