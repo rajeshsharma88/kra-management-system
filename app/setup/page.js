@@ -89,15 +89,22 @@ export default function SetupPage() {
       return
     }
 
-    const res = await fetch('/api/setup?action=teams', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ teams: names }),
-    })
-    const json = await res.json()
+    let res, json
+    try {
+      res = await fetch('/api/setup?action=teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teams: names }),
+      })
+      json = await res.json()
+    } catch (err) {
+      setErrors_server('Network error: ' + err.message)
+      setLoading(false)
+      return
+    }
 
     if (!res.ok) {
-      setErrors_server(json.error ?? 'Failed to save teams. Please try again.')
+      setErrors_server(json?.error ?? `Server error (${res.status})`)
       setLoading(false)
       return
     }
