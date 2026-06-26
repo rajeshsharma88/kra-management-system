@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useForm, useFieldArray } from 'react-hook-form'
+
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Trash2, CheckCircle } from 'lucide-react'
@@ -79,7 +80,6 @@ export default function SetupPage() {
   async function saveTeams(data) {
     setLoading(true)
     setErrors_server('')
-    const supabase = createClient()
 
     const names = data.teams.map((t) => t.team_name.trim())
     const unique = new Set(names)
@@ -89,18 +89,20 @@ export default function SetupPage() {
       return
     }
 
-    const { data: inserted, error } = await supabase
-      .from('teams')
-      .insert(names.map((n) => ({ team_name: n })))
-      .select()
+    const res = await fetch('/api/setup?action=teams', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teams: names }),
+    })
+    const json = await res.json()
 
-    if (error) {
-      setErrors_server('Failed to save teams. Please try again.')
+    if (!res.ok) {
+      setErrors_server(json.error ?? 'Failed to save teams. Please try again.')
       setLoading(false)
       return
     }
 
-    setTeams(inserted)
+    setTeams(json.teams)
     setStepsComplete((p) => ({ ...p, 1: true }))
     setLoading(false)
     setStep(1)
@@ -118,41 +120,22 @@ export default function SetupPage() {
       return
     }
 
-    try {
-      for (const emp of data.employees) {
-        const email = `${emp.username}@kra.internal`
-        const { data: authUser, error: authError } = await supabase.auth.admin
-          ? { data: null, error: { message: 'Use API route' } }
-          : { data: null, error: null }
+    const res = await fetch('/api/setup?action=employees', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ employees: data.employees }),
+    })
+    const json = await res.json()
 
-        const res = await fetch('/api/employees', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            full_name: emp.full_name,
-            username: emp.username,
-            password: emp.password,
-            team_id: emp.team_id,
-            role: emp.role,
-            is_paid_ads_member: emp.is_paid_ads_member,
-          }),
-        })
-
-        if (!res.ok) {
-          const err = await res.json()
-          setErrors_server(err.error ?? 'Failed to create employee.')
-          setLoading(false)
-          return
-        }
-      }
-
-      setStepsComplete((p) => ({ ...p, 2: true }))
+    if (!res.ok) {
+      setErrors_server(json.error ?? 'Failed to create employees. Please try again.')
       setLoading(false)
-      setStep(1)
-    } catch {
-      setErrors_server('Something went wrong. Please try again.')
-      setLoading(false)
+      return
     }
+
+    setStepsComplete((p) => ({ ...p, 2: true }))
+    setLoading(false)
+    setStep(1)
   }
 
   const stepCards = [
