@@ -31,6 +31,7 @@ export async function GET(request) {
 
   const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
     password: newPassword,
+    email_confirm: true,
   })
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
